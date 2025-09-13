@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOS Mechanics Booking</title>
+<style>
+/* Mobile-first + golden ratio styling */
+body { font-family: Arial, sans-serif; max-width: 600px; margin:0 auto; padding:16px; line-height:1.618; font-size:1rem; }
+h2 { font-size:1.618rem; text-align:center; margin-bottom:16px; }
+form input, form select, form textarea, form button { width:100%; padding:10px; margin-bottom:16px; font-size:1rem; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
+button { font-weight:bold; cursor:pointer; }
+#callbackBtn { background-color:#FF9800; color:#fff; border:none; }
+a { display:block; text-align:center; margin-top:16px; padding:10px; background-color:#25D366; color:#fff; text-decoration:none; border-radius:6px; }
+p { margin-bottom:16px; }
+@media (max-width:480px){ body{padding:12px;} h2{font-size:1.414rem;} form input,form select,form textarea,form button{font-size:0.95rem;} }
+</style>
+</head>
+<body>
+
+<h2>SOS Mechanics – Book a Service</h2>
+
+<form id="bookingForm">
+  <input type="text" name="name" placeholder="Your name" required><br>
+  <input type="text" name="phone" placeholder="Phone number" required><br>
+  <input type="text" name="address" placeholder="Address / Postcode" required><br>
+
+  <p style="color:#555; font-style:italic;">Have you already ordered a part from motor factors? We can fit it for you during your booking!</p>
+  <label><input type="checkbox" name="ownPart" value="Yes"> I have my own part</label><br>
+
+  <select name="service" required>
+    <option value="">Choose a service</option>
+    <option>Starter Motor Replacement – from £120</option>
+    <option>Alternator Replacement – from £140</option>
+    <option>Battery Test & Replacement – from £60</option>
+    <option>Brake Pads & Discs – from £100</option>
+    <option>Full Service (Oil + Filters) – from £180</option>
+    <option>Diagnostic Scan – £40</option>
+    <option>Clutch Replacement – from £350</option>
+    <option>Fuel Filter Change – from £70</option>
+    <option>Emergency Callout – from £50</option>
+  </select><br>
+
+  <textarea name="details" placeholder="Extra details..."></textarea><br>
+  <button type="submit">Book Now</button>
+</form>
+
+<p style="text-align:center;">
+  <a href="https://wa.me/447405937104?text=Hi,+I+need+to+book+a+mechanic+service" target="_blank">💬 Chat on WhatsApp</a>
+</p>
+
+<p style="text-align:center;">
+  <button id="callbackBtn">📞 Request Callback</button>
+</p>
+
+<script>
+const BOT_TOKEN = "8353819114:AAF09ELwy_MbfzBaPS_grV5EOhvlQsyqndQ";
+const CHAT_ID = 7527365740;
+const URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+function generateJobId(){ return Date.now(); }
+
+document.getElementById("bookingForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const jobId = generateJobId();
+
+  const msg = `
+🎟️ *SOS Mechanics Ticket*
+━━━━━━━━━━━━━━
+Job ID: ${jobId}
+👤 Name: ${fd.get("name")}
+📞 Phone: ${fd.get("phone")}
+📍 Address: ${fd.get("address")}
+🔧 Service: ${fd.get("service")}
+🛠 Own Part: ${fd.get("ownPart") || "No"}
+📝 Notes: ${fd.get("details")}
+━━━━━━━━━━━━━━
+📍 [View on Google Maps](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fd.get("address"))})
+⏰ Time: ${new Date().toLocaleString()}
+`;
+
+  fetch(URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      chat_id: CHAT_ID,
+      text: msg,
+      parse_mode:"Markdown",
+      reply_markup:{
+        inline_keyboard:[
+          [{text:"✅ Accept",callback_data:"accept"},{text:"❌ Reject",callback_data:"reject"}],
+          [{text:"🔧 In Progress",callback_data:"in_progress"},{text:"✅ Completed",callback_data:"completed"}],
+          [{text:"📝 Add Note",callback_data:`add_note_${jobId}`}]
+        ]
+      }
+    })
+  }).then(()=>alert("Booking sent!"));
+});
+
+document.getElementById("callbackBtn").addEventListener("click", function(){
+  const phone = prompt("Enter your phone number for callback:");
+  if(!phone) return;
+  const jobId = generateJobId();
+
+  const msg = `
+🎟️ *SOS Mechanics Callback Request*
+━━━━━━━━━━━━━━
+Job ID: ${jobId}
+📞 Phone: ${phone}
+⏰ Time: ${new Date().toLocaleString()}
+`;
+
+  fetch(URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      chat_id: CHAT_ID,
+      text: msg,
+      parse_mode:"Markdown",
+      reply_markup:{
+        inline_keyboard:[
+          [{text:"✅ Accept",callback_data:"accept_callback"},{text:"❌ Reject",callback_data:"reject_callback"}],
+          [{text:"🔧 In Progress",callback_data:"in_progress"},{text:"✅ Completed",callback_data:"completed"}],
+          [{text:"📝 Add Note",callback_data:`add_note_${jobId}`}]
+        ]
+      }
+    })
+  }).then(()=>alert("Callback request sent!"));
+});
+</script>
+</body>
+</html>
