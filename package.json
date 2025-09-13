@@ -1,0 +1,24 @@
+{
+  "name": "sos-mechanics",
+  "version": "1.0.0",
+  "description": "SOS Mechanics booking system with Telegram job management",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "keywords": [
+    "mechanic",
+    "booking",
+    "telegram",
+    "job-management",
+    "sos-mechanics"
+  ],
+  "author": "SOS Mechanics",
+  "license": "MIT",
+  "dependencies": {
+    "telegraf": "^4.13.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
